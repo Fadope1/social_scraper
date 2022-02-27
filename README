@@ -1,0 +1,4 @@
+This package is a Wrapper for snscrape.
+
+It (currently) provides Scraping functionalities for:
+1. Twitter
