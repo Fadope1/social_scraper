@@ -5,11 +5,9 @@ TODO:
 - logging
 """
 
-from typing import Tuple
+from typing import Tuple, Dict, List
 import datetime
 import logging
-
-import pandas as pd
 
 from social_scraper.exceptions import MaxCountReached, InvalidInput
 
@@ -48,18 +46,16 @@ class SocialAnalyser:
     characterizing/ analysing content.
     """
 
-    def __init__(self, debug=False, data=None) -> None:
+    def __init__(self, debug:bool = False, data: List[Dict[str, str]] = None) -> None:
         if data is None:
-            data = pd.DataFrame(columns=DATAFRAME_COLS)
+            data = []
 
-        self.data: list = data # data initialized with [] for __add__ operation
+        self.data: list = data # data initialized with empty list for __add__ operation
         self.counter: int = 0 # data counter (count tweets/ posts etc.)
 
         # Defaults:
         self.debug: bool = debug # no requests will be made when set to True (default:False)
-
         self.var_names: list = []
-        self.max_results: int = 100 if not debug else 5
 
     def parse_search_parameter(self, search_query) -> str:
         """This builds the search query"""
@@ -88,12 +84,12 @@ class SocialAnalyser:
             elif var is not DEFAULT_VAR_VALUE:
                 raise TypeError(f"{var_type} is wrong type for keyword = {key}")
 
-        logging.info("Searching for: %s", query)
+        logging.debug("Searching for: %s", query)
 
         return query
 
     def scraper(self, search_method: type, query: str) -> None:
-        """This runs the given scraper using the query"""
+        """This runs the given scraper using the query."""
         search_query: str = self.parse_search_parameter(query)
 
         if self.debug:
@@ -102,23 +98,23 @@ class SocialAnalyser:
         search_result = search_method(search_query).get_items()
 
         for post in search_result:
-            # stop if max_results reached
+            # stop if max_results reached if not None (no limit)
             if self.max_results != DEFAULT_VAR_VALUE and self.counter >= self.max_results:
                 raise MaxCountReached(f"Max count of tweets encountered at count {self.counter}")
 
-            # append data to dataframe
-            # TODO: change to pd.concat function
-            self.data = self.data.append({
-                "Datetime": post.date,
-                "Id": post.id,
-                "Content": post.content,
-                "Username": post.username,
-                "Query": search_query
-            }, ignore_index=True)
+            self.data.append(
+                {
+                    'Datetime': post.date,
+                    'Id': post.id,
+                    'Content': post.content,
+                    'Username': post.username,
+                    'Query': search_query
+                }
+            )
 
             self.counter += 1 # increase request tweet counter
 
-    def parse_kwargs(self, kwargs) -> None: # parse vars and run function calles ->
+    def parse_kwargs(self, kwargs) -> None:
         """Parse keyword args to self -> run corresponding methods with args"""
         scraper_vars: tuple = self.var_names + OPTIONAL_KWARGS + REQUIRED_KWARGS + QUERY_KEYS # all keywords
 
@@ -171,7 +167,7 @@ class SocialAnalyser:
 
     def __add__(self, other: type) -> type:
         """Adds 2 scrapers togehter (scraper1 + scraper2)"""
-        return SocialAnalyser(debug=self.debug, data=self.data+other.data)
+        return SocialAnalyser(debug=self.debug, data=dict(self.data, **other.data))
 
     def __getitem__(self, key: str):
         """Get attribute by str name, called with self[key]"""

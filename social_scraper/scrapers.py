@@ -1,5 +1,6 @@
 """
 Here are all scrapers classes for the Social Media sites.
+What about scraper specific functions = recursive functions???
 """
 
 from typing import Union, List, Tuple
@@ -17,7 +18,7 @@ class TwitterScraper(SocialAnalyser):
         super().__init__(debug=debug)
         self.add_variables("hashtags_recursive", "id_recursive")
 
-    def scrape(self, search_method: None, query_terms: ArgType) -> None:
+    def scrape(self, search_method: None, query_terms: ArgType) -> list:
         """Helper method to iterate over all search_terms and run the scraper."""
         for term in query_terms:
             self.scraper(search_method=search_method, query=term)
