@@ -1,4 +1,4 @@
-This package is a Wrapper for snscrape.
+This package is a Wrapper for snscrape. (Python3.8)
 
 It (currently) provides Scraping functionalities for:
 1. Twitter
