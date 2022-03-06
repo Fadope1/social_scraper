@@ -50,6 +50,7 @@ class SocialAnalyser:
         if data is None:
             data = []
 
+        # rewrite to tinyDB?
         self.data: list = data # data initialized with empty list for __add__ operation
         self.counter: int = 0 # data counter (count tweets/ posts etc.)
 
