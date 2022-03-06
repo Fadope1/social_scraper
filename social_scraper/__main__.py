@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.CRITICAL)
 
 twitter_data = TwitterScraper(debug=False) # debug: no actuall request will be made
 twitter_data.get_tweets(
-    hashtags=["stocks", "stock"], # search tweets with hastag
+    hashtags=["BASF", "Ludwigshafen"], # search tweets with hastag
     # hashtags_recursive=True, # research with newly found hastags from content scrape
     # usernames=["elon musk", "bill gates"], # search user last tweets
     # searchbar=("stock", "stocks"), # search like twitter searchbar
@@ -30,7 +30,7 @@ import pandas as pd
 
 data = pd.DataFrame(twitter_data.data)
 
-print(data)
+print("dataframe.", data)
 
 data.to_csv("out.csv")
 

@@ -5,7 +5,7 @@ TODO:
 - logging
 """
 
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Union
 import datetime
 import logging
 
@@ -88,7 +88,7 @@ class SocialAnalyser:
 
         return query
 
-    def scraper(self, search_method: type, query: str) -> None:
+    def scraper(self, search_method: type, query: str) -> Union[None, str]:
         """This runs the given scraper using the query."""
         search_query: str = self.parse_search_parameter(query)
 
@@ -102,6 +102,7 @@ class SocialAnalyser:
             if self.max_results != DEFAULT_VAR_VALUE and self.counter >= self.max_results:
                 raise MaxCountReached(f"Max count of tweets encountered at count {self.counter}")
 
+            # TODO: only append if post.id not already in data (nosql)
             self.data.append(
                 {
                     'Datetime': post.date,
@@ -113,6 +114,8 @@ class SocialAnalyser:
             )
 
             self.counter += 1 # increase request tweet counter
+
+            yield post.content
 
     def parse_kwargs(self, kwargs) -> None:
         """Parse keyword args to self -> run corresponding methods with args"""
