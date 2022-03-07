@@ -103,7 +103,7 @@ class SocialAnalyser:
             if self.max_results != DEFAULT_VAR_VALUE and self.counter >= self.max_results:
                 raise MaxCountReached(f"Max count of tweets encountered at count {self.counter}")
 
-            # TODO: only append if post.id not already in data (nosql)
+            # TODO: only append if post.id not already in data
             self.data.append(
                 {
                     'Datetime': post.date,
@@ -117,6 +117,8 @@ class SocialAnalyser:
             self.counter += 1 # increase request tweet counter
 
             yield post.content
+
+        # TODO: change to one yield scraper and one "normal" scraper
 
     def parse_kwargs(self, kwargs) -> None:
         """Parse keyword args to self -> run corresponding methods with args"""

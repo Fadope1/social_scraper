@@ -13,17 +13,17 @@ logging.basicConfig(level=logging.CRITICAL)
 
 twitter_data = TwitterScraper(debug=False) # debug: no actuall request will be made
 twitter_data.get_tweets(
-    hashtags=["BASF", "Ludwigshafen"], # search tweets with hastag
-    # hashtags_recursive=True, # research with newly found hastags from content scrape
+    hashtags=["basf"], # search tweets with hastag
+    hashtags_recursive=True, # research with newly found hastags from content scrape
     # usernames=["elon musk", "bill gates"], # search user last tweets
-    # searchbar=("stock", "stocks"), # search like twitter searchbar
+    # searchbar=("BASF", "basf"), # search like twitter searchbar
     # list_search=["username/listname"],
     # ids=["idOfTweet"],
     # id_recursive=True, # id_search with comments etc. (maybe slow)
     since=datetime.datetime.today()-datetime.timedelta(days=0),
     # until=datetime.datetime.today()+datetime.timedelta(days=1),
-    filter=("links", "replies"),
-    max_results=100
+    # filter=("links", "replies"),
+    max_results=1000,
 )
 
 import pandas as pd
