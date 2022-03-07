@@ -31,7 +31,7 @@ class TwitterScraper(SocialAnalyser):
         found_hashtags: list = re.findall(r"(#[A-Z]+\b)", msg)
         for hashtag in found_hashtags:
             if hashtag not in exclude_hashtags:
-                temp_new_hashtags.append(hashtag)
+                temp_new_hashtags.append(hashtag.replace('#', ''))
 
         return temp_new_hashtags # TODO: regex find # + symbol -> minues exclude_hashtags
 
@@ -43,16 +43,16 @@ class TwitterScraper(SocialAnalyser):
             self.scrape(search_method=modules.twitter.TwitterHashtagScraper, query_terms=hashtags)
             return None
 
+        # TODO: scraped_hashtags gets overwritten for some reason
         scraped_hashtags: list = hashtags[::]
         for hashtag in hashtags:
             for tweet_content in self.scraper(search_method=modules.twitter.TwitterHashtagScraper, query=hashtag):
                 new_hashtags = self.extract_hashtags(msg=tweet_content, exclude_hashtags=scraped_hashtags)
+                print(type(new_hashtags), new_hashtags, scraped_hashtags)
                 scraped_hashtags.extend(new_hashtags) # duplicates? Who cares...
                 if len(new_hashtags) == 0:
                     return None
                 self.hashtags_search(new_hashtags)
-
-        print(scraped_hashtags)
 
     def usernames_search(self, usernames: ArgType) -> None:
         """Search twitter by username."""

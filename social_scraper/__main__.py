@@ -23,7 +23,7 @@ twitter_data.get_tweets(
     since=datetime.datetime.today()-datetime.timedelta(days=0),
     # until=datetime.datetime.today()+datetime.timedelta(days=1),
     # filter=("links", "replies"),
-    max_results=1000,
+    max_results=30,
 )
 
 import pandas as pd
