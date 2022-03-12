@@ -30,29 +30,30 @@ class TwitterScraper(SocialAnalyser):
         temp_new_hashtags: list = []
         found_hashtags: list = re.findall(r"(#[A-Z]+\b)", msg)
         for hashtag in found_hashtags:
+            hashtag = hashtag.replace('#', '').upper()
             if hashtag not in exclude_hashtags:
-                temp_new_hashtags.append(hashtag.replace('#', ''))
+                temp_new_hashtags.append(hashtag)
 
-        return temp_new_hashtags # TODO: regex find # + symbol -> minues exclude_hashtags
+        return temp_new_hashtags
 
-    def hashtags_search(self, hashtags: ArgType) -> None:
+    def hashtags_search(self, hashtags: ArgType, new_hashtags: list = None) -> None:
         """Search twitter by hashtags."""
-        # TODO: recursive not working: only returning view results
 
         if self.hashtags_recursive is None:
             self.scrape(search_method=modules.twitter.TwitterHashtagScraper, query_terms=hashtags)
             return None
 
-        # TODO: scraped_hashtags gets overwritten for some reason
-        scraped_hashtags: list = hashtags[::]
-        for hashtag in hashtags:
+        # Research with found hashtags in tweet
+        if new_hashtags is None:
+            hashtags = [tag.upper() for tag in hashtags] # convert to uppercase
+            new_hashtags = hashtags[::] # copy the list to new_hashtags for first time
+        for hashtag in new_hashtags:
+            print(f"Searching for {hashtag}")
             for tweet_content in self.scraper(search_method=modules.twitter.TwitterHashtagScraper, query=hashtag):
-                new_hashtags = self.extract_hashtags(msg=tweet_content, exclude_hashtags=scraped_hashtags)
-                print(type(new_hashtags), new_hashtags, scraped_hashtags)
-                scraped_hashtags.extend(new_hashtags) # duplicates? Who cares...
-                if len(new_hashtags) == 0:
-                    return None
-                self.hashtags_search(new_hashtags)
+                new_hashtags = self.extract_hashtags(msg=tweet_content, exclude_hashtags=hashtags)
+                hashtags.extend(new_hashtags)
+                if len(new_hashtags) != 0:
+                    self.hashtags_search(hashtags=hashtags, new_hashtags=new_hashtags)
 
     def usernames_search(self, usernames: ArgType) -> None:
         """Search twitter by username."""

@@ -118,8 +118,6 @@ class SocialAnalyser:
 
             yield post.content
 
-        # TODO: change to one yield scraper and one "normal" scraper
-
     def parse_kwargs(self, kwargs) -> None:
         """Parse keyword args to self -> run corresponding methods with args"""
         scraper_vars: tuple = self.var_names + OPTIONAL_KWARGS + REQUIRED_KWARGS + QUERY_KEYS # all keywords
@@ -154,8 +152,9 @@ class SocialAnalyser:
 
             try:
                 exec(f"self.{key}_search({value})") # run corresponding method from child class
-            except MaxCountReached:
+            except MaxCountReached as err:
                 # if max count was reached stop the scraping process
+                logging.debug(err)
                 break
 
     def get_posts(self, **kwargs) -> None:

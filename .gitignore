@@ -2,3 +2,5 @@ test.py
 test_import.py
 out.csv
 __pycache__
+data.json
+.DB_Store

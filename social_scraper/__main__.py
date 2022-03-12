@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.CRITICAL)
 
 twitter_data = TwitterScraper(debug=False) # debug: no actuall request will be made
 twitter_data.get_tweets(
-    hashtags=["basf"], # search tweets with hastag
+    hashtags=["basf", "stock"], # search tweets with hastag
     hashtags_recursive=True, # research with newly found hastags from content scrape
     # usernames=["elon musk", "bill gates"], # search user last tweets
     # searchbar=("BASF", "basf"), # search like twitter searchbar
