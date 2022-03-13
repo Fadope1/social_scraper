@@ -5,15 +5,16 @@ TODO:
 - logging
 """
 
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, List, Union
 import datetime
 import logging
+
+from attrs import define
 
 from social_scraper.exceptions import MaxCountReached, InvalidInput
 
 # CONSTANTS:
 DEFAULT_VAR_VALUE = None # default value for not set args
-DATAFRAME_COLS: list = ['Datetime', 'Id', 'Content', 'Username', 'Query']
 
 DATETIME_OBJECTS = (datetime.datetime, datetime.date) # all accepted date objects
 ITERABLE_OBJECTS = (list, tuple)
@@ -39,6 +40,18 @@ REQUIRED_KWARGS: Tuple[str] = ()
 KWARGS_TYPES: tuple = (int, bool) + QUERY_ARG_TYPES
 
 
+# TODO: Namedtuple better?
+# TODO: Learn slots -> Usecase?
+@define(frozen=True)
+class Post:
+    """Stores the data received from snscrape."""
+    date: DATETIME_OBJECTS
+    id: str
+    content: str
+    username: str
+    query: str
+
+
 class SocialAnalyser:
     """
     Base class for all scrapers.
@@ -46,12 +59,11 @@ class SocialAnalyser:
     characterizing/ analysing content.
     """
 
-    def __init__(self, debug:bool = False, data: List[Dict[str, str]] = None) -> None:
+    def __init__(self, debug:bool = False, data: List[Post]=None) -> None:
         if data is None:
-            data = []
+            data = [] # data initialized with empty list for __add__ operation
 
-        # rewrite to tinyDB?
-        self.data: list = data # data initialized with empty list for __add__ operation
+        self.data: List[Post] = data
         self.counter: int = 0 # data counter (count tweets/ posts etc.)
 
         # Defaults:
@@ -59,7 +71,7 @@ class SocialAnalyser:
         self.var_names: list = []
 
     def parse_search_parameter(self, search_query) -> str:
-        """This builds the search query"""
+        """This builds the search query."""
         query = f"{search_query} " # base search query
 
         for key, values in QUERY_KWARGS.items():
@@ -69,8 +81,7 @@ class SocialAnalyser:
 
             if var_type in values:
                 # rename var for snscrape
-                if key in QUERY_NAMESPACE:
-                    key = QUERY_NAMESPACE.get(key)
+                key = QUERY_NAMESPACE.get(key, key)
 
                 if var_type in DATETIME_OBJECTS:
                     query += f"{key}:{var:%Y-%m-%d} "
@@ -94,7 +105,7 @@ class SocialAnalyser:
         search_query: str = self.parse_search_parameter(query)
 
         if self.debug:
-            return None
+            return
 
         search_result = search_method(search_query).get_items()
 
@@ -103,23 +114,25 @@ class SocialAnalyser:
             if self.max_results != DEFAULT_VAR_VALUE and self.counter >= self.max_results:
                 raise MaxCountReached(f"Max count of tweets encountered at count {self.counter}")
 
-            # TODO: only append if post.id not already in data
-            self.data.append(
-                {
-                    'Datetime': post.date,
-                    'Id': post.id,
-                    'Content': post.content,
-                    'Username': post.username,
-                    'Query': search_query
-                }
-            )
+            # construct the post
+            post = Post(
+                        date=post.date,
+                        id=post.id,
+                        content=post.content,
+                        username=post.username,
+                        query=search_query
+                    )
+
+            # append if not already in data
+            if post not in self.data:
+                self.data.append(post)
 
             self.counter += 1 # increase request tweet counter
 
             yield post.content
 
     def parse_kwargs(self, kwargs) -> None:
-        """Parse keyword args to self -> run corresponding methods with args"""
+        """Parse keyword args to self -> run corresponding methods with args."""
         scraper_vars: tuple = self.var_names + OPTIONAL_KWARGS + REQUIRED_KWARGS + QUERY_KEYS # all keywords
 
         # check the validity of kwargs
@@ -158,21 +171,22 @@ class SocialAnalyser:
                 break
 
     def get_posts(self, **kwargs) -> None:
-        """User function. Overwritten by some scrapers"""
+        """User function. Overwritten by some scrapers."""
         self.parse_kwargs(kwargs)
 
     def add_variables(self, *var_names: str) -> None:
-        """This registers the custom variables as valid"""
+        """This registers the custom variables as valid."""
         # TODO: perform var_names check here -> no duplicates etc.
         self.var_names = var_names
 
     def __is_valid(self, kwargs, scraper_vars: tuple) -> bool:
-        """Check if all kwargs are either a known function or a variable argument"""
+        """Check if all kwargs are either a known function or a variable argument."""
         return all(((f"{key}_search" in dir(self) or key in scraper_vars) for key in kwargs))
 
     def __add__(self, other: type) -> type:
-        """Adds 2 scrapers togehter (scraper1 + scraper2)"""
-        return SocialAnalyser(debug=self.debug, data=dict(self.data, **other.data))
+        """Adds 2 scrapers data together (scraper1.data + scraper2.data)."""
+        temp = self.data[::].extend(other.data)
+        return SocialAnalyser(debug=self.debug, data=temp)
 
     def __getitem__(self, key: str):
         """Get attribute by str name, called with self[key]"""

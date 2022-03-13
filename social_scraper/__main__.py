@@ -11,7 +11,7 @@ import logging
 from social_scraper.scrapers import TwitterScraper
 logging.basicConfig(level=logging.CRITICAL)
 
-twitter_data = TwitterScraper(debug=False) # debug: no actuall request will be made
+twitter_data = TwitterScraper(debug=True) # debug: no actuall request will be made
 twitter_data.get_tweets(
     hashtags=["basf", "stock"], # search tweets with hastag
     hashtags_recursive=True, # research with newly found hastags from content scrape
@@ -22,17 +22,19 @@ twitter_data.get_tweets(
     # id_recursive=True, # id_search with comments etc. (maybe slow)
     since=datetime.datetime.today()-datetime.timedelta(days=0),
     # until=datetime.datetime.today()+datetime.timedelta(days=1),
-    # filter=("links", "replies"),
+    filter=("links", "replies"),
     max_results=30,
 )
 
-import pandas as pd
+# print(twitter_data.data)
 
-data = pd.DataFrame(twitter_data.data)
-
-print("dataframe.", data)
-
-data.to_csv("out.csv")
+# import pandas as pd
+#
+# data = pd.DataFrame(twitter_data.data)
+#
+# print("dataframe.", data)
+#
+# data.to_csv("out.csv")
 
 # print(twitter_data + twitter_data)
 # print(twitter_data + twitter_data + twitter_data)
