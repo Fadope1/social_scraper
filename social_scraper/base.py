@@ -40,8 +40,7 @@ REQUIRED_KWARGS: Tuple[str] = ()
 KWARGS_TYPES: tuple = (int, bool) + QUERY_ARG_TYPES
 
 
-# TODO: Namedtuple better?
-# TODO: Learn slots -> Usecase?
+# TODO: Namedtuple?
 @define(frozen=True)
 class Post:
     """Stores the data received from snscrape."""
@@ -126,6 +125,8 @@ class SocialAnalyser:
             # append if not already in data
             if post not in self.data:
                 self.data.append(post)
+            else:
+                logging.debug(f"{post} was already in data.")
 
             self.counter += 1 # increase request tweet counter
 
