@@ -5,19 +5,19 @@ TODO:
 - logging
 """
 
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Callable, Generator, Iterator
 import datetime
 import logging
 
-from attrs import define
+from attrs import define # dataclasses with slots
 
 from social_scraper.exceptions import MaxCountReached, InvalidInput
 
-# CONSTANTS:
+### CONSTANTS:
 DEFAULT_VAR_VALUE = None # default value for not set args
 
 DATETIME_OBJECTS = (datetime.datetime, datetime.date) # all accepted date objects
-ITERABLE_OBJECTS = (list, tuple)
+ITERABLE_OBJECTS = (list, tuple) # accepted iterables
 
 # allowed args and types for parsers
 QUERY_KWARGS: dict = {
@@ -26,6 +26,7 @@ QUERY_KWARGS: dict = {
     "filter": ITERABLE_OBJECTS, # list[str], tuple[str]
 }
 
+# for converting key values to snscrape vars
 QUERY_NAMESPACE: dict = {
     "filter": "-fitler"
 }
@@ -35,9 +36,11 @@ QUERY_ARG_TYPES: tuple = ()
 for _, value in QUERY_KWARGS.items():
     QUERY_ARG_TYPES += value
 
+# Default optional or required keywords for social_scraper
 OPTIONAL_KWARGS: Tuple[str] = ("max_results",)
 REQUIRED_KWARGS: Tuple[str] = ()
 KWARGS_TYPES: tuple = (int, bool) + QUERY_ARG_TYPES
+###
 
 
 # TODO: Namedtuple?
@@ -99,14 +102,14 @@ class SocialAnalyser:
 
         return query
 
-    def scraper(self, search_method: type, query: str) -> Union[None, str]:
+    def scraper(self, search_method: Callable[[str], None], query: str) -> Iterator[str]:
         """This runs the given scraper using the query."""
         search_query: str = self.parse_search_parameter(query)
 
         if self.debug:
             return
 
-        search_result = search_method(search_query).get_items()
+        search_result: Generator = search_method(search_query).get_items()
 
         for post in search_result:
             # stop if max_results reached if not None (no limit)

@@ -4,3 +4,5 @@ out.csv
 __pycache__
 data.json
 .DB_Store
+Dockerfile
+.git

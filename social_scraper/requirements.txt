@@ -1,0 +1,5 @@
+attrs==21.4.0
+pandas==1.4.1
+platformdirs==2.5.1
+requests==2.27.1
+snscrape==0.4.3.20220106
